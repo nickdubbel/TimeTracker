@@ -40,8 +40,9 @@ coverage.xml
 *.sqlite3
 *.db
 
-# Upload folders
+# generated folders
 uploads/
+exports/
 
 # Ignore specific application files
 *.ics

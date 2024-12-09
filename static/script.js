@@ -10,13 +10,14 @@ function toggleInstructions() {
     }
 }
 
-document.getElementById('uploadForm').addEventListener('submit', async function(e) {
+document.getElementById('uploadForm').addEventListener('submit', async function (e) {
     e.preventDefault();
     const formData = new FormData(this);
+
     try {
         const response = await fetch('/upload', {
             method: 'POST',
-            body: formData
+            body: formData,
         });
 
         if (!response.ok) {
@@ -26,24 +27,36 @@ document.getElementById('uploadForm').addEventListener('submit', async function(
 
         const result = await response.json();
 
-        // Vul de tabel met maandelijkse samenvatting
-        const summaryTableBody = document.querySelector('#monthlySummaryTable tbody');
-        summaryTableBody.innerHTML = ""; // Reset de tabel
-        result.monthly_summary.forEach(row => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `<td>${row.month}</td><td>${row.duration.toFixed(2)}</td>`;
-            summaryTableBody.appendChild(tr);
-        });
+        // Controleer of result de verwachte structuur heeft
+        if (result && result.summary) {
+            // Vul de maandelijkse samenvattingstabel
+            const summaryTableBody = document.querySelector('#monthlySummaryTable tbody');
+            summaryTableBody.innerHTML = ''; // Reset de tabel
+            if (Array.isArray(result.summary.monthly_summary)) {
+                result.summary.monthly_summary.forEach((row) => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `<td>${row.month}</td><td>${row.duration.toFixed(2)}</td>`;
+                    summaryTableBody.appendChild(tr);
+                });
+            }
 
-        // Vul de tabel met gedetailleerde afspraken
-        const tableBody = document.querySelector('#detailedTable tbody');
-        tableBody.innerHTML = ""; // Reset de tabel
-        result.detailed_table.forEach(row => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `<td>${row.title}</td><td>${row.date}</td><td>${row.duration.toFixed(2)}</td>`;
-            tableBody.appendChild(tr);
-        });
+            // Vul de gedetailleerde afspraken tabel
+            const tableBody = document.querySelector('#detailedTable tbody');
+            tableBody.innerHTML = ''; // Reset de tabel
+            if (Array.isArray(result.summary.detailed_table)) {
+                result.summary.detailed_table.forEach((row) => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `<td>${row.title}</td><td>${row.date}</td><td>${row.duration.toFixed(
+                        2
+                    )}</td>`;
+                    tableBody.appendChild(tr);
+                });
+            }
+        } else {
+            throw new Error('Ongeldige API-response structuur');
+        }
     } catch (error) {
         alert(`Er is een fout opgetreden: ${error.message}`);
     }
 });
+
