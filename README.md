@@ -19,8 +19,8 @@ Deze applicatie stelt je in staat om iCal-bestanden te uploaden, specifieke afsp
 ## Installatie
 1. Clone de repository:
    ```bash
-   git clone https://github.com/<jouw-gebruikersnaam>/ical-urenberekening.git
-   cd ical-urenberekening
+   git clone https://github.com/nickdubbel/TimeTracker.git
+   cd TimeTracker
    ```
 
 2. Maak een virtuele omgeving:
