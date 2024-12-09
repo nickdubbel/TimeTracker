@@ -111,14 +111,45 @@ def export_to_excel():
 
         if df.empty:
             return jsonify({'error': 'Geen evenementen gevonden om te exporteren'}), 400
-        
-        # Reorder the columns
+
+        # Reorder columns for the detailed table
         df = df[['title', 'date', 'start', 'end', 'duration']]
 
-        # Exporteer naar Excel
+        # Bereken de samenvatting per maand
+        df['date'] = pd.to_datetime(df['date'], errors='coerce')
+        df['month'] = df['date'].dt.to_period('M')
+        monthly_summary = df.groupby('month')['duration'].sum().reset_index()
+        monthly_summary['month'] = monthly_summary['month'].dt.strftime('%Y-%m')
+
+        # Formatteer de datumkolom terug
+        df['date'] = df['date'].dt.strftime('%Y-%m-%d')
+
+        # Exporteer naar Excel met 2 sheets
         export_path = './exports/events.xlsx'
         os.makedirs('./exports', exist_ok=True)
-        df.to_excel(export_path, index=False)
+
+        with pd.ExcelWriter(export_path, engine='openpyxl') as writer:
+            # Sheet 1: Maandelijkse samenvatting
+            monthly_summary.to_excel(writer, sheet_name='Samenvatting per maand', index=False)
+
+            # Sheet 2: Gedetailleerde tabel
+            df.to_excel(writer, sheet_name='Gedetailleerde afspraken', index=False)
+
+            # Pas de kolombreedtes aan
+            workbook = writer.book
+            for sheet_name in writer.sheets:
+                worksheet = writer.sheets[sheet_name]
+                for column_cells in worksheet.columns:
+                    max_length = 0
+                    column_letter = column_cells[0].column_letter  # Get the column letter
+                    for cell in column_cells:
+                        try:
+                            if cell.value:
+                                max_length = max(max_length, len(str(cell.value)))
+                        except:
+                            pass
+                    adjusted_width = max_length + 2  # Extra ruimte
+                    worksheet.column_dimensions[column_letter].width = adjusted_width
 
         # Sla het export pad op in de sessie voor latere cleanup
         session['export_path'] = export_path
