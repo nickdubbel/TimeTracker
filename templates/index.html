@@ -4,81 +4,76 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>iCal Urenberekening</title>
+    <!-- Link to CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <h1>iCal Urenberekening</h1>
-    <form id="uploadForm" enctype="multipart/form-data">
-        <label for="event_name">Woord dat in de titel voorkomt:</label>
-        <input type="text" id="event_name" name="event_name" required>
-        <br><br>
-        <label for="file">Upload iCal bestand:</label>
-        <input type="file" id="file" name="file" accept=".ics" required>
-        <br><br>
-        <button type="submit">Verzenden</button>
-    </form>
-    <br>
-    <h2>Maandelijkse Samenvatting:</h2>
-    <table id="monthlySummaryTable" border="1">
-        <thead>
-            <tr>
-                <th>Maand</th>
-                <th>Totaal Uren</th>
-            </tr>
-        </thead>
-        <tbody></tbody>
-    </table>
+    <div class="content">
+        <h1>iCal Urenberekening</h1>
+        <form id="uploadForm" enctype="multipart/form-data">
+            <label for="event_name">Woord dat in de titel voorkomt:</label>
+            <input type="text" id="event_name" name="event_name" placeholder="Bijvoorbeeld: Werk" required>
+            
+            <label for="file">Upload iCal bestand:</label>
+            <input type="file" id="file" name="file" accept=".ics" required>
+            
+            <button type="submit">Verzenden</button>
+        </form>
 
-<h2>Gedetailleerde afspraken:</h2>
-<table id="detailedTable" border="1">
-    <thead>
-        <tr>
-            <th>Titel</th>
-            <th>Datum</th>
-            <th>Uren</th>
-        </tr>
-    </thead>
-    <tbody></tbody>
-</table>
+        <div class="instructions">
+            <div class="instructions-summary" onclick="toggleInstructions()">
+                Hoe download je een iCal-bestand van Google Agenda? <span id="toggle-text"><b>[Toon]</b></span>
+            </div>
+            <div class="instructions-details" id="instructions-details">
+                <p><b>Stap 1:</b> Open <a href="https://calendar.google.com" target="_blank">Google Agenda</a> en log in met je Google-account.</p>
+                <p><b>Stap 2:</b> Ga naar Instellingen:</p>
+                <ul>
+                    <li>Klik op het <b>tandwiel-icoon</b> rechtsboven in het scherm.</li>
+                    <li>Selecteer <b>Instellingen</b> in het dropdownmenu.</li>
+                </ul>
+                <p><b>Stap 3:</b> Selecteer de gewenste agenda:</p>
+                <ul>
+                    <li>In het linkermenu, onder <b>Instellingen voor mijn agenda's</b>, klik op de naam van de agenda.</li>
+                </ul>
+                <p><b>Stap 4:</b> Download de agenda:</p>
+                <ul>
+                    <li>Scroll naar beneden naar <b>Agenda-instellingen</b>.</li>
+                    <li>Klik op <b>Geheime adres in iCal-formaat</b>.</li>
+                    <li>Kopieer de weergegeven link of klik erop om het iCal-bestand te downloaden.</li>
+                </ul>
+                <p><b>Let op:</b> Deel deze URL niet met anderen, omdat het volledige toegang geeft tot je agenda.</p>
+            </div>
+        </div>
 
-<script>
-    document.getElementById('uploadForm').addEventListener('submit', async function(e) {
-    e.preventDefault();
-    const formData = new FormData(this);
-    try {
-        const response = await fetch('/upload', {
-            method: 'POST',
-            body: formData
-        });
+        <h2>Maandelijkse Samenvatting:</h2>
+        <table id="monthlySummaryTable">
+            <thead>
+                <tr>
+                    <th>Maand</th>
+                    <th>Totaal Uren</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
 
-        if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(`Serverfout: ${errorText}`);
-        }
+        <h2>Gedetailleerde afspraken:</h2>
+        <table id="detailedTable">
+            <thead>
+                <tr>
+                    <th>Titel</th>
+                    <th>Datum</th>
+                    <th>Uren</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
 
-        const result = await response.json();
+    <footer>
+        <p>Host this application yourself! Check the source code on <a href="https://github.com/nickdubbel/TimeTracker" target="_blank">GitHub</a>.</p>
+    </footer>
 
-        // Vul de tabel met maandelijkse samenvatting
-        const summaryTableBody = document.querySelector('#monthlySummaryTable tbody');
-        summaryTableBody.innerHTML = ""; // Reset de tabel
-        result.monthly_summary.forEach(row => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `<td>${row.month}</td><td>${row.duration.toFixed(2)}</td>`;
-            summaryTableBody.appendChild(tr);
-        });
-
-        // Vul de tabel met gedetailleerde afspraken
-        const tableBody = document.querySelector('#detailedTable tbody');
-        tableBody.innerHTML = ""; // Reset de tabel
-        result.detailed_table.forEach(row => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `<td>${row.title}</td><td>${row.date}</td><td>${row.duration.toFixed(2)}</td>`;
-            tableBody.appendChild(tr);
-        });
-    } catch (error) {
-        alert(`Er is een fout opgetreden: ${error.message}`);
-    }
-});
-</script>
-
+    <!-- Link to JavaScript -->
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>
