@@ -1,6 +1,6 @@
 # iCal Urenberekening
 
-Deze applicatie stelt je in staat om iCal-bestanden te uploaden, specifieke afspraken te filteren op basis van een zoekwoord, en berekeningen te maken van de totale uren per maand. 
+Deze applicatie stelt je in staat om iCal-bestanden te uploaden, specifieke afspraken te filteren op basis van een zoekwoord, en berekeningen te maken van de totale uren per maand.
 
 ## Functies
 - Upload een iCal-bestand.
@@ -44,6 +44,22 @@ Deze applicatie stelt je in staat om iCal-bestanden te uploaden, specifieke afsp
 
 3. Upload een iCal-bestand en voer een zoekwoord in om de afspraken te filteren.
 
+## Docker Gebruik
+### Applicatie bouwen en uitvoeren met Docker
+1. **Bouw de Docker-container**:
+   ```bash
+   docker build -t ical-urenberekening .
+   ```
+
+2. **Start de container**:
+   ```bash
+   docker run -d -p 8000:8000 ical-urenberekening
+   ```
+
+3. **Open de applicatie**:
+   Ga naar [http://127.0.0.1:8000](http://127.0.0.1:8000) in je browser.
+
+
 ## Projectstructuur
 ```
 ical-urenberekening/
@@ -52,6 +68,7 @@ ical-urenberekening/
 │   └── index.html       # HTML-interface
 ├── uploads/             # Tijdelijke opslag voor geüploade bestanden
 ├── requirements.txt     # Vereiste Python-pakketten
+├── Dockerfile           # Docker configuratie
 ├── .gitignore           # Git uitsluitingen
 └── README.md            # Projectdocumentatie
 ```
@@ -61,3 +78,4 @@ Dit project wordt verspreid onder de MIT-licentie. Zie `LICENSE` voor meer infor
 
 ## Contributie
 Voel je vrij om pull requests te openen of problemen te melden in de issue-tracker. Feedback en verbeteringen zijn altijd welkom!
+
