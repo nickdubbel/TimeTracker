@@ -1,0 +1,47 @@
+# Byte-compiled files
+*.pyc
+*.pyo
+__pycache__/
+
+# Environment and package files
+.env
+*.env
+.venv/
+venv/
+ENV/
+env/
+
+# Logs
+*.log
+
+# IDE specific files
+.vscode/
+.idea/
+*.swp
+
+# System-specific files
+.DS_Store
+Thumbs.db
+
+# Compiled files
+*.so
+*.dll
+*.dylib
+
+# Testing artifacts
+.coverage
+*.cover
+*.py,cover
+.cache/
+nosetests.xml
+coverage.xml
+
+# Generated files
+*.sqlite3
+*.db
+
+# Upload folders
+uploads/
+
+# Ignore specific application files
+*.ics
