@@ -79,18 +79,31 @@
         </div>
 
         <h2>Maandelijkse Samenvatting:</h2>
-        <table id="monthlySummaryTable">
+        <table id="monthlySummaryTable" border="1">
             <thead>
                 <tr>
                     <th>Maand</th>
                     <th>Totaal Uren</th>
                 </tr>
             </thead>
-            <tbody></tbody>
+            <tbody>
+            {% if monthly_summary %}
+                {% for row in monthly_summary %}
+                <tr>
+                    <td>{{ row.month }}</td>
+                    <td>{{ row.duration|round(2) }}</td>
+                </tr>
+                {% endfor %}
+            {% else %}
+                <tr>
+                    <td colspan="2">Geen data beschikbaar</td>
+                </tr>
+            {% endif %}
+            </tbody>
         </table>
 
         <h2>Gedetailleerde afspraken:</h2>
-        <table id="detailedTable">
+        <table id="detailedTable" border="1">
             <thead>
                 <tr>
                     <th>Titel</th>
@@ -98,7 +111,21 @@
                     <th>Uren</th>
                 </tr>
             </thead>
-            <tbody></tbody>
+            <tbody>
+            {% if detailed_table %}
+                {% for row in detailed_table %}
+                <tr>
+                    <td>{{ row.title }}</td>
+                    <td>{{ row.date }}</td>
+                    <td>{{ row.duration|round(2) }}</td>
+                </tr>
+                {% endfor %}
+            {% else %}
+                <tr>
+                    <td colspan="3">Geen data beschikbaar</td>
+                </tr>
+            {% endif %}
+            </tbody>
         </table>
 
         <h2>Exporteer afspraken:</h2>

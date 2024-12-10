@@ -12,7 +12,7 @@ from googleapiclient.discovery import build
 from flask import redirect, url_for, session
 import os
 from werkzeug.middleware.proxy_fix import ProxyFix
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 SCOPES = ['https://www.googleapis.com/auth/calendar.readonly']
 
 
@@ -219,40 +219,84 @@ def oauth2callback():
     # Ga terug naar list-events om de eerder opgevraagde evenementen nu op te halen
     return redirect(url_for('list_events'))
 
+def process_google_calendar_events(events):
+    filtered_events = []
+    for event in events:
+        title = event.get('summary', '')
+        start_str = event['start'].get('dateTime') or event['start'].get('date')
+        end_str = event['end'].get('dateTime') or event['end'].get('date')
+
+        if start_str and end_str:
+            start_dt = datetime.fromisoformat(start_str.replace('Z', '+00:00'))
+            end_dt = datetime.fromisoformat(end_str.replace('Z', '+00:00'))
+            duration = (end_dt - start_dt).total_seconds() / 3600
+            filtered_events.append({
+                'title': title,
+                'date': start_dt.strftime('%Y-%m-%d'),
+                'start': start_dt.strftime('%H:%M'),
+                'end': end_dt.strftime('%H:%M'),
+                'duration': duration
+            })
+
+    df = pd.DataFrame(filtered_events)
+    return df
+
+
 @app.route('/list-events', methods=['POST', 'GET'])
 def list_events():
     if request.method == 'POST':
         event_name = request.form.get('event_name', '')
-        # Sla de zoekterm op in de sessie
         session['requested_event_name'] = event_name
     else:
         event_name = session.get('requested_event_name', '')
 
-    # Controleer of we credentials hebben
     if 'credentials' not in session:
-        # Niet ingelogd, eerst autoriseren
         return redirect(url_for('authorize'))
 
-    # Nu hebben we credentials, we kunnen data ophalen
     creds = Credentials(**session['credentials'])
     service = build('calendar', 'v3', credentials=creds)
 
-    # time of a year ago
-    a_year_ago = (datetime.now(timezone.utc) - pd.DateOffset(years=1)).isoformat()
     now = datetime.now(timezone.utc).isoformat()
+    one_year_ago = datetime.now(timezone.utc) - timedelta(days=365)
+    one_year_ago_iso = one_year_ago.isoformat()
     events_result = service.events().list(
         calendarId='primary',
-        timeMin=a_year_ago,
+        timeMin=one_year_ago_iso,
         maxResults=100,
         singleEvents=True,
         orderBy='startTime'
     ).execute()
     events = events_result.get('items', [])
 
-    # Filter op event_name
-    filtered_events = [e for e in events if event_name.lower() in (e.get('summary','')).lower()]
+    # Filteren op het ingevoerde zoekwoord
+    filtered_events = [e for e in events if event_name.lower() in (e.get('summary', '').lower())]
 
-    return render_template('index.html', events=filtered_events)
+    # Verwerk naar DataFrame
+    df = process_google_calendar_events(filtered_events)
+
+    # Sla de DataFrame op in de sessie, net als bij iCal
+    session['dataframe'] = df.to_dict(orient='records')
+
+    # Gebruik dezelfde samenvattingsmethode als bij iCal
+    # Stel dat we dezelfde 'get_summary' functie gebruiken, dan moeten we die iets generieker maken
+    # omdat get_summary nu een bestandsnaam en event_word verwacht.
+    # We kunnen echter de logica van get_summary ook hier direct toepassen:
+    if not df.empty:
+        df['date'] = pd.to_datetime(df['date'], errors='coerce')
+        df['month'] = df['date'].dt.to_period('M')
+        monthly_summary = df.groupby('month')['duration'].sum().reset_index()
+        monthly_summary['month'] = monthly_summary['month'].dt.strftime('%Y-%m')
+        
+        # Zet de data om naar dicts zodat we ze in de template kunnen gebruiken
+        monthly_summary_records = monthly_summary.to_dict(orient='records')
+        detailed_records = df[['title','date','duration']].to_dict(orient='records')
+    else:
+        monthly_summary_records = []
+        detailed_records = []
+
+    return render_template('index.html', 
+                           monthly_summary=monthly_summary_records, 
+                           detailed_table=detailed_records)
 
 
 
