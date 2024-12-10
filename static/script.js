@@ -60,3 +60,75 @@ document.getElementById('uploadForm').addEventListener('submit', async function 
     }
 });
 
+// document.getElementById('uploadForm2').addEventListener('submit', async function (e) {
+//     e.preventDefault(); // Voorkomt standaardformulierverzending
+//     const formData = new FormData(this);
+//     const eventName = formData.get('event_name');
+
+//     try {
+//         const response = await fetch('/list-events', {
+//             method: 'POST',
+//             headers: {
+//                 'Content-Type': 'application/json',
+//             },
+//             body: JSON.stringify({ event_name: eventName }),
+//         });
+
+//         if (!response.ok) {
+//             throw new Error(`Serverfout: ${response.statusText}`);
+//         }
+
+//         const result = await response.json();
+//         console.log('Resultaat ontvangen:', result);
+
+//         // Verwerk het resultaat en vul de tabellen in
+//         if (result && result.raw_events) {
+//             const events = result.raw_events;
+
+//             // Vul de maandelijkse samenvatting (optioneel aanpassen aan de structuur)
+//             const monthlySummaryTable = document.querySelector('#monthlySummaryTable tbody');
+//             monthlySummaryTable.innerHTML = ''; // Reset tabel
+//             const eventMap = {}; // Tijdelijke opslag voor het samenvatten van duur per maand
+
+//             events.forEach((event) => {
+//                 const start = new Date(event.start.dateTime || event.start.date);
+//                 const monthKey = `${start.getFullYear()}-${(start.getMonth() + 1)
+//                     .toString()
+//                     .padStart(2, '0')}`;
+//                 const duration = (new Date(event.end.dateTime || event.end.date) - start) / (1000 * 3600);
+
+//                 if (!eventMap[monthKey]) {
+//                     eventMap[monthKey] = 0;
+//                 }
+//                 eventMap[monthKey] += duration;
+//             });
+
+//             Object.entries(eventMap).forEach(([month, duration]) => {
+//                 const row = document.createElement('tr');
+//                 row.innerHTML = `<td>${month}</td><td>${duration.toFixed(2)}</td>`;
+//                 monthlySummaryTable.appendChild(row);
+//             });
+
+//             // Vul de gedetailleerde afspraken
+//             const detailedTable = document.querySelector('#detailedTable tbody');
+//             detailedTable.innerHTML = ''; // Reset tabel
+
+//             events.forEach((event) => {
+//                 const start = new Date(event.start.dateTime || event.start.date);
+//                 const duration = (new Date(event.end.dateTime || event.end.date) - start) / (1000 * 3600);
+
+//                 const row = document.createElement('tr');
+//                 row.innerHTML = `
+//                     <td>${event.summary}</td>
+//                     <td>${start.toISOString().split('T')[0]}</td>
+//                     <td>${duration.toFixed(2)}</td>`;
+//                 detailedTable.appendChild(row);
+//             });
+//         } else {
+//             alert('Geen evenementen gevonden');
+//         }
+//     } catch (error) {
+//         console.error('Fout:', error);
+//         alert(`Er is een fout opgetreden: ${error.message}`);
+//     }
+// });

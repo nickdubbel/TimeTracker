@@ -5,9 +5,22 @@ import pandas as pd
 from icalendar import Calendar
 from datetime import datetime
 
+# google authentication
+from google.oauth2.credentials import Credentials
+from google_auth_oauthlib.flow import InstalledAppFlow
+from googleapiclient.discovery import build
+from flask import redirect, url_for, session
+import os
+from werkzeug.middleware.proxy_fix import ProxyFix
+from datetime import datetime, timezone
+SCOPES = ['https://www.googleapis.com/auth/calendar.readonly']
+
+
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = './uploads'
 app.secret_key = 'verysecret123768234698579083456'
+app.config['PREFERRED_URL_SCHEME'] = 'https'
+app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
 def process_ical(file_path, event_word):
@@ -169,6 +182,77 @@ def cleanup_file(exception=None):
             print(f"Bestand verwijderd na sessie: {export_path}")
         except Exception as e:
             print(f"Fout bij verwijderen van bestand na sessie: {e}")
+
+@app.route('/authorize')
+def authorize():
+    flow = InstalledAppFlow.from_client_secrets_file('google_credentials.json', SCOPES)
+    flow.redirect_uri = url_for('oauth2callback', _external=True)
+    authorization_url, state = flow.authorization_url(
+        access_type='offline',
+        include_granted_scopes='true',
+        prompt='consent'
+    )
+    session['state'] = state
+    return redirect(authorization_url)
+
+@app.route('/oauth2callback')
+def oauth2callback():
+    state = session.get('state')
+    if not state:
+        return "Geen state in sessie, probeer opnieuw via /authorize", 400
+
+    flow = InstalledAppFlow.from_client_secrets_file(
+        'google_credentials.json', SCOPES, state=state)
+    flow.redirect_uri = url_for('oauth2callback', _external=True)
+
+    flow.fetch_token(authorization_response=request.url)
+    credentials = flow.credentials
+    session['credentials'] = {
+        'token': credentials.token,
+        'refresh_token': credentials.refresh_token,
+        'token_uri': credentials.token_uri,
+        'client_id': credentials.client_id,
+        'client_secret': credentials.client_secret,
+        'scopes': credentials.scopes
+    }
+
+    # Ga terug naar list-events om de eerder opgevraagde evenementen nu op te halen
+    return redirect(url_for('list_events'))
+
+@app.route('/list-events', methods=['POST', 'GET'])
+def list_events():
+    if request.method == 'POST':
+        event_name = request.form.get('event_name', '')
+        # Sla de zoekterm op in de sessie
+        session['requested_event_name'] = event_name
+    else:
+        event_name = session.get('requested_event_name', '')
+
+    # Controleer of we credentials hebben
+    if 'credentials' not in session:
+        # Niet ingelogd, eerst autoriseren
+        return redirect(url_for('authorize'))
+
+    # Nu hebben we credentials, we kunnen data ophalen
+    creds = Credentials(**session['credentials'])
+    service = build('calendar', 'v3', credentials=creds)
+
+    # time of a year ago
+    a_year_ago = (datetime.now(timezone.utc) - pd.DateOffset(years=1)).isoformat()
+    now = datetime.now(timezone.utc).isoformat()
+    events_result = service.events().list(
+        calendarId='primary',
+        timeMin=a_year_ago,
+        maxResults=100,
+        singleEvents=True,
+        orderBy='startTime'
+    ).execute()
+    events = events_result.get('items', [])
+
+    # Filter op event_name
+    filtered_events = [e for e in events if event_name.lower() in (e.get('summary','')).lower()]
+
+    return render_template('index.html', events=filtered_events)
 
 
 

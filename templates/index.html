@@ -17,8 +17,41 @@
             <label for="file">Upload iCal bestand:</label>
             <input type="file" id="file" name="file" accept=".ics" required>
             
-            <button type="submit">Verzenden</button>
+            <button type="submit">Zoek in iCal afspraken</button>
         </form>
+        <h1>Zoek in Google Calendar evenementen</h1>
+        <form method="post" action="/list-events">
+            <label for="event_name">Zoekwoord voor evenementen:</label>
+            <input type="text" name="event_name" id="event_name" placeholder="Bijvoorbeeld: Werk" required>
+            <button type="submit">Zoek</button>
+        </form>
+
+        {% if events is not none %}
+            <h2>Gevonden Evenementen</h2>
+            {% if events|length > 0 %}
+            <table border="1">
+                <thead>
+                    <tr>
+                        <th>Titel</th>
+                        <th>Start</th>
+                        <th>Einde</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for e in events %}
+                    <tr>
+                        <td>{{ e.summary }}</td>
+                        <td>{{ e.start.dateTime or e.start.date }}</td>
+                        <td>{{ e.end.dateTime or e.end.date }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+                <p>Geen evenementen gevonden</p>
+            {% endif %}
+        {% endif %}
+        
 
         <div class="instructions">
             <div class="instructions-summary" onclick="toggleInstructions()">

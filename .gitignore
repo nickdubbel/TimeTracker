@@ -46,3 +46,6 @@ exports/
 
 # Ignore specific application files
 *.ics
+
+# credentials
+google_credentials.json
