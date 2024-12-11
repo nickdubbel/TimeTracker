@@ -20,7 +20,7 @@ app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = './uploads'
 app.secret_key = 'verysecret123768234698579083456'
 app.config['PREFERRED_URL_SCHEME'] = 'https'
-app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
+app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1) #to use cloudflare
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
 def process_ical(file_path, event_word):
@@ -256,13 +256,16 @@ def list_events():
     creds = Credentials(**session['credentials'])
     service = build('calendar', 'v3', credentials=creds)
 
-    now = datetime.now(timezone.utc).isoformat()
-    one_year_ago = datetime.now(timezone.utc) - timedelta(days=365)
-    one_year_ago_iso = one_year_ago.isoformat()
+    # now = datetime.now(timezone.utc).isoformat()
+    # one_year_ago = datetime.now(timezone.utc) - timedelta(days=365)
+    # one_year_ago_iso = one_year_ago.isoformat()
+    five_years_ago = datetime.now(timezone.utc) - timedelta(days=5*365)
+    five_years_ago_iso = five_years_ago.isoformat()
     events_result = service.events().list(
         calendarId='primary',
-        timeMin=one_year_ago_iso,
-        maxResults=100,
+        q=event_name, # Filter op zoekwoord
+        timeMin=five_years_ago_iso,
+        maxResults=1000,
         singleEvents=True,
         orderBy='startTime'
     ).execute()
@@ -302,4 +305,4 @@ def list_events():
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8000)
+    app.run(host='0.0.0.0', port=8000, debug=True)
