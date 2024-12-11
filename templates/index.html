@@ -3,133 +3,149 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>iCal Urenberekening</title>
+    <title>iCal Urenberekening test</title>
     <!-- Link to CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
     <div class="content">
-        <h1>iCal Urenberekening</h1>
-        <form id="uploadForm" enctype="multipart/form-data">
-            <label for="event_name">Woord dat in de titel voorkomt:</label>
-            <input type="text" id="event_name" name="event_name" placeholder="Bijvoorbeeld: Werk" required>
-            
-            <label for="file">Upload iCal bestand:</label>
-            <input type="file" id="file" name="file" accept=".ics" required>
-            
-            <button type="submit">Zoek in iCal afspraken</button>
-        </form>
-        <h1>Zoek in Google Calendar evenementen</h1>
-        <form method="post" action="/list-events">
-            <label for="event_name">Zoekwoord voor evenementen:</label>
-            <input type="text" name="event_name" id="event_name" placeholder="Bijvoorbeeld: Werk" required>
-            <button type="submit">Zoek</button>
-        </form>
+        <div class="box">
+            <h1>Importeer je agenda</h1>
+            <div class="container">
+                <div class="box iCal-upload">
+                    <h2>Zoek in iCal bestand</h2>
+                    <form id="uploadForm" enctype="multipart/form-data">
+                        <label for="event_name">Zoekwoord voor evenementen: </label>
+                        <input type="text" id="event_name" name="event_name" placeholder="Bijvoorbeeld: Werk" required>
+                        
+                        <label for="file">Upload iCal bestand:</label>
+                        <input type="file" id="file" name="file" accept=".ics" required>
+                        
+                        <button type="submit">Zoek in iCal afspraken</button>
+                    </form>
 
-        {% if events is not none %}
-            <h2>Gevonden Evenementen</h2>
-            {% if events|length > 0 %}
-            <table border="1">
-                <thead>
-                    <tr>
-                        <th>Titel</th>
-                        <th>Start</th>
-                        <th>Einde</th>
-                    </tr>
-                </thead>
-                <tbody>
-                {% for e in events %}
-                    <tr>
-                        <td>{{ e.summary }}</td>
-                        <td>{{ e.start.dateTime or e.start.date }}</td>
-                        <td>{{ e.end.dateTime or e.end.date }}</td>
-                    </tr>
-                {% endfor %}
-                </tbody>
-            </table>
-            {% else %}
-                <p>Geen evenementen gevonden</p>
-            {% endif %}
-        {% endif %}
-        
+                    <div class="instructions">
+                        <div class="instructions-summary" onclick="toggleInstructions()">
+                            Hoe download je een iCal-bestand van Google Agenda? <span id="toggle-text"><b>[Toon]</b></span>
+                        </div>
+                        <div class="instructions-details" id="instructions-details">
+                            <p><b>Stap 1:</b> Open <a href="https://calendar.google.com" target="_blank">Google Agenda</a> en log in met je Google-account.</p>
+                            <p><b>Stap 2:</b> Ga naar Instellingen:</p>
+                            <ul>
+                                <li>Klik op het <b>tandwiel-icoon</b> rechtsboven in het scherm.</li>
+                                <li>Selecteer <b>Instellingen</b> in het dropdownmenu.</li>
+                            </ul>
+                            <p><b>Stap 3:</b> Selecteer de gewenste agenda:</p>
+                            <ul>
+                                <li>In het linkermenu, onder <b>Instellingen voor mijn agenda's</b>, klik op de naam van de agenda.</li>
+                            </ul>
+                            <p><b>Stap 4:</b> Download de agenda:</p>
+                            <ul>
+                                <li>Scroll naar beneden naar <b>Agenda-instellingen</b>.</li>
+                                <li>Klik op <b>Geheime adres in iCal-formaat</b>.</li>
+                                <li>Kopieer de weergegeven link of klik erop om het iCal-bestand te downloaden.</li>
+                            </ul>
+                            <p><b>Let op:</b> Deel deze URL niet met anderen, omdat het volledige toegang geeft tot je agenda.</p>
+                        </div>
+                    </div>        
 
-        <div class="instructions">
-            <div class="instructions-summary" onclick="toggleInstructions()">
-                Hoe download je een iCal-bestand van Google Agenda? <span id="toggle-text"><b>[Toon]</b></span>
-            </div>
-            <div class="instructions-details" id="instructions-details">
-                <p><b>Stap 1:</b> Open <a href="https://calendar.google.com" target="_blank">Google Agenda</a> en log in met je Google-account.</p>
-                <p><b>Stap 2:</b> Ga naar Instellingen:</p>
-                <ul>
-                    <li>Klik op het <b>tandwiel-icoon</b> rechtsboven in het scherm.</li>
-                    <li>Selecteer <b>Instellingen</b> in het dropdownmenu.</li>
-                </ul>
-                <p><b>Stap 3:</b> Selecteer de gewenste agenda:</p>
-                <ul>
-                    <li>In het linkermenu, onder <b>Instellingen voor mijn agenda's</b>, klik op de naam van de agenda.</li>
-                </ul>
-                <p><b>Stap 4:</b> Download de agenda:</p>
-                <ul>
-                    <li>Scroll naar beneden naar <b>Agenda-instellingen</b>.</li>
-                    <li>Klik op <b>Geheime adres in iCal-formaat</b>.</li>
-                    <li>Kopieer de weergegeven link of klik erop om het iCal-bestand te downloaden.</li>
-                </ul>
-                <p><b>Let op:</b> Deel deze URL niet met anderen, omdat het volledige toegang geeft tot je agenda.</p>
+                </div>
+                <div class="box google-upload">
+                    <h2>Zoek in Google Calendar evenementen</h2>
+                    <form method="post" action="/list-events">
+                        <label for="event_name">Zoekwoord voor evenementen:</label>
+                        <input type="text" name="event_name" id="event_name" placeholder="Bijvoorbeeld: Werk" required>
+                        <button type="submit">Zoek in google</button>
+                    </form>
+                </div>
             </div>
         </div>
 
-        <h2>Maandelijkse Samenvatting:</h2>
-        <table id="monthlySummaryTable" border="1">
-            <thead>
-                <tr>
-                    <th>Maand</th>
-                    <th>Totaal Uren</th>
-                </tr>
-            </thead>
-            <tbody>
-            {% if monthly_summary %}
-                {% for row in monthly_summary %}
-                <tr>
-                    <td>{{ row.month }}</td>
-                    <td>{{ row.duration|round(2) }}</td>
-                </tr>
-                {% endfor %}
-            {% else %}
-                <tr>
-                    <td colspan="2">Geen data beschikbaar</td>
-                </tr>
+        <div class="box">
+            <h1>Resultaten</h1>
+            {% if events is not none %}
+                <h2>Gevonden Evenementen</h2>
+                {% if events|length > 0 %}
+                <table border="1">
+                    <thead>
+                        <tr>
+                            <th>Titel</th>
+                            <th>Start</th>
+                            <th>Einde</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for e in events %}
+                        <tr>
+                            <td>{{ e.summary }}</td>
+                            <td>{{ e.start.dateTime or e.start.date }}</td>
+                            <td>{{ e.end.dateTime or e.end.date }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                    <p>Geen evenementen gevonden</p>
+                {% endif %}
             {% endif %}
-            </tbody>
-        </table>
+            
 
-        <h2>Gedetailleerde afspraken:</h2>
-        <table id="detailedTable" border="1">
-            <thead>
-                <tr>
-                    <th>Titel</th>
-                    <th>Datum</th>
-                    <th>Uren</th>
-                </tr>
-            </thead>
-            <tbody>
-            {% if detailed_table %}
-                {% for row in detailed_table %}
-                <tr>
-                    <td>{{ row.title }}</td>
-                    <td>{{ row.date }}</td>
-                    <td>{{ row.duration|round(2) }}</td>
-                </tr>
-                {% endfor %}
-            {% else %}
-                <tr>
-                    <td colspan="3">Geen data beschikbaar</td>
-                </tr>
-            {% endif %}
-            </tbody>
-        </table>
+            
+            <h2>Maandelijkse Samenvatting:</h2>
+            <table id="monthlySummaryTable" border="1">
+                <thead>
+                    <tr>
+                        <th>Maand</th>
+                        <th>Totaal Uren</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% if monthly_summary %}
+                    {% for row in monthly_summary %}
+                    <tr>
+                        <td>{{ row.month }}</td>
+                        <td>{{ row.duration|round(2) }}</td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="2">Geen data beschikbaar</td>
+                    </tr>
+                {% endif %}
+                </tbody>
+            </table>
 
-        <h2>Exporteer afspraken:</h2>
-        <button onclick="window.location.href='/export'">Download Excel</button>
+            <h2>Gedetailleerde afspraken:</h2>
+            <table id="detailedTable" border="1">
+                <thead>
+                    <tr>
+                        <th>Titel</th>
+                        <th>Datum</th>
+                        <th>Uren</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% if detailed_table %}
+                    {% for row in detailed_table %}
+                    <tr>
+                        <td>{{ row.title }}</td>
+                        <td>{{ row.date }}</td>
+                        <td>{{ row.duration|round(2) }}</td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="3">Geen data beschikbaar</td>
+                    </tr>
+                {% endif %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="box">
+            <h2>Exporteer overzicht:</h2>
+            <button onclick="window.location.href='/export'">Download Excel</button>
+        </div>
     </div>
 
     
